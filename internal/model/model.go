@@ -77,6 +77,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ConversationMsg:
 		if msg.SessionID == m.selectedID {
 			m.entries = append(m.entries, msg.Entries...)
+			m.convScroll = 1<<31 - 1 // stay pinned to bottom; clamped on render
 		}
 
 	case WatchErrorMsg:
@@ -161,7 +162,7 @@ func (m *Model) selectCurrent() {
 					delete(m.unreadSet, s.SessionID)
 					m.listState.UnreadSet = m.unreadSet
 					m.entries = nil
-					m.convScroll = 0
+					m.convScroll = 1<<31 - 1 // clamped to maxScroll on render
 					if m.onSelectSession != nil {
 						m.onSelectSession(s)
 					}
