@@ -53,7 +53,13 @@ func RenderSessionList(groups []session.ProjectGroup, selected string, state Ses
 		if collapsed {
 			arrow = ">"
 		}
-		groupLine := projectHeaderStyle.Render(truncateLine(fmt.Sprintf(" %s %s", arrow, g.Name), width))
+		groupText := truncateLine(fmt.Sprintf(" %s %s", arrow, g.Name), width)
+		var groupLine string
+		if flatIdx == state.Cursor {
+			groupLine = selectedRowStyle.Render(padRight(groupText, width))
+		} else {
+			groupLine = projectHeaderStyle.Render(groupText)
+		}
 		lines = append(lines, padRight(groupLine, width))
 		flatIdx++
 
