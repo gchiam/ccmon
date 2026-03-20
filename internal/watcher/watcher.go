@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -19,9 +20,12 @@ type Watcher struct {
 	dir          string
 	program      *tea.Program
 	stop         chan struct{}
+	stopOnce     sync.Once
 	fsw          *fsnotify.Watcher
 	jsonlWatched map[string]string // JSONL path -> sessionID
-	selectedID   string            // suppress unread for this session
+
+	mu         sync.Mutex
+	selectedID string // suppress unread for this session; guarded by mu
 }
 
 // New creates a Watcher for the given sessions directory. program may be nil for testing.
@@ -36,7 +40,9 @@ func New(dir string, program *tea.Program) *Watcher {
 
 // SetSelected updates which session is currently selected (suppresses unread for it).
 func (w *Watcher) SetSelected(sessionID string) {
+	w.mu.Lock()
 	w.selectedID = sessionID
+	w.mu.Unlock()
 }
 
 // Run blocks until Stop() is called. It tries fsnotify first; on failure falls back
@@ -77,7 +83,10 @@ func (w *Watcher) Run() {
 				w.sendUpdate(sessions)
 				w.syncJSONLWatches(sessions)
 			} else if id, watched := w.jsonlWatched[event.Name]; watched {
-				if id != w.selectedID {
+				w.mu.Lock()
+				sel := w.selectedID
+				w.mu.Unlock()
+				if id != sel {
 					w.send(model.UnreadMsg{SessionID: id})
 				}
 			}
@@ -142,9 +151,9 @@ func (w *Watcher) syncJSONLWatches(sessions []*session.Session) {
 	}
 }
 
-// Stop signals the watcher to exit.
+// Stop signals the watcher to exit. Safe to call multiple times.
 func (w *Watcher) Stop() {
-	close(w.stop)
+	w.stopOnce.Do(func() { close(w.stop) })
 }
 
 // LoadSessions reads all *.json files in dir, parses them, and checks PID liveness.

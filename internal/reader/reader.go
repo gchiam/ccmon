@@ -171,10 +171,20 @@ func (r *Reader) poll() {
 	if n == 0 || err != nil {
 		return
 	}
-	r.offset += int64(n)
+	buf = buf[:n]
+
+	// Only process complete lines. Find the last newline and advance offset
+	// only up to that point, leaving any partial final line for the next poll.
+	lastNL := strings.LastIndex(string(buf), "\n")
+	if lastNL < 0 {
+		// No complete line yet; wait for more data.
+		return
+	}
+	r.offset += int64(lastNL + 1)
+	complete := buf[:lastNL]
 
 	var entries []model.ConversationEntry
-	for _, line := range strings.Split(string(buf[:n]), "\n") {
+	for _, line := range strings.Split(string(complete), "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
