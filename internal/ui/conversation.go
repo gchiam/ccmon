@@ -15,7 +15,7 @@ var (
 	resultPrefix    = lipgloss.NewStyle().Foreground(Muted).Render("→")
 
 	codeBlockStyle = lipgloss.NewStyle().
-			Background(lipgloss.Color("#1e2030")).
+			Background(lipgloss.Color("#292c3c")).
 			Foreground(lipgloss.Color("#c6d0f5")).
 			Padding(0, 1)
 

@@ -6,7 +6,7 @@ import "github.com/charmbracelet/lipgloss"
 // Catppuccin Frappe palette used throughout the TUI.
 const (
 	ColorBackground      = "#303446"
-	ColorPanelBg         = "#292c3c"
+	ColorPanelBg         = "#303446"
 	ColorHeaderFooter    = "#232634"
 	ColorBorder          = "#414559"
 	ColorSelectedRow     = "#414559"
