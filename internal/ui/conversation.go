@@ -57,16 +57,22 @@ func renderEntry(e ConversationEntry, width int) []string {
 	switch e.Type {
 	case "human":
 		header := fmt.Sprintf("%s human · %s", humanPrefix, tsStyle.Render(e.Timestamp))
-		return []string{header, WrapText(e.Text, width-2, "  ")}
+		lines := []string{header}
+		lines = append(lines, strings.Split(WrapText(e.Text, width-2, "  "), "\n")...)
+		return lines
 	case "assistant":
 		header := fmt.Sprintf("%s assistant · %s", assistantPrefix, tsStyle.Render(e.Timestamp))
-		return []string{header, WrapText(e.Text, width-2, "  ")}
+		lines := []string{header}
+		lines = append(lines, strings.Split(WrapText(e.Text, width-2, "  "), "\n")...)
+		return lines
 	case "tool_call":
 		header := fmt.Sprintf("%s %s · %s", toolPrefix,
 			lipgloss.NewStyle().Foreground(UnreadTool).Render(e.ToolName),
 			tsStyle.Render(e.Timestamp))
 		block := codeBlockStyle.Width(width - 4).Render(e.Text)
-		return []string{header, block}
+		lines := []string{header}
+		lines = append(lines, strings.Split(block, "\n")...)
+		return lines
 	case "tool_result":
 		return []string{fmt.Sprintf("%s %s", resultPrefix, e.Result)}
 	default:
