@@ -17,14 +17,18 @@ var (
 			Foreground(Dim)
 )
 
-const defaultHint = " ↑↓ nav · Space collapse · Tab switch · Enter select · q quit"
+const defaultHint = " ↑↓ nav · Space collapse · Enter select · Tab switch · q quit"
 
-// RenderStatusBar renders the footer bar. warn is non-empty when fsnotify is unavailable.
-func RenderStatusBar(warn string, width int) string {
+// RenderStatusBar renders the footer bar.
+// warn takes priority; info shows full details of the highlighted item; falls back to hint.
+func RenderStatusBar(warn, info string, width int) string {
 	var content string
-	if warn != "" {
+	switch {
+	case warn != "":
 		content = warnBarStyle.Render(" ⚠ " + warn)
-	} else {
+	case info != "":
+		content = lipgloss.NewStyle().Foreground(Muted).Render(" " + info)
+	default:
 		content = hintBarStyle.Render(defaultHint)
 	}
 	return statusBarStyle.Width(width).Render(padRight(content, width))

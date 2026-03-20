@@ -4,6 +4,7 @@ package model
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -188,7 +189,7 @@ func (m *Model) View() string {
 	leftPanel := ui.RenderSessionList(m.groups, m.selectedID, m.listState, leftWidth, contentHeight)
 	rightPanel := ui.RenderConversation(m.entries, m.convScroll, rightWidth, contentHeight)
 	divider := renderDivider(contentHeight)
-	footer := ui.RenderStatusBar(m.watchWarn, m.width)
+	footer := ui.RenderStatusBar(m.watchWarn, m.cursorInfo(), m.width)
 
 	body := lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, divider, rightPanel)
 	return lipgloss.JoinVertical(lipgloss.Left, header, body, footer)
@@ -290,6 +291,35 @@ func flatCount(groups []session.ProjectGroup, collapsed map[string]bool) int {
 		}
 	}
 	return n
+}
+
+// cursorInfo returns a full description of the item at the current cursor position
+// for display in the status bar when text is truncated in the left panel.
+func (m *Model) cursorInfo() string {
+	idx := 0
+	for _, g := range m.groups {
+		if idx == m.listState.Cursor {
+			return g.Name
+		}
+		idx++
+		if !m.listState.Collapsed[g.Name] {
+			for _, s := range g.Sessions {
+				if idx == m.listState.Cursor {
+					name := s.ProjectName
+					if s.WorktreeBranch != "" {
+						name = "⎇ " + s.WorktreeBranch
+					}
+					ts := ""
+					if s.StartedAt > 0 {
+						ts = " · " + time.Unix(s.StartedAt, 0).Format("15:04:05")
+					}
+					return name + ts
+				}
+				idx++
+			}
+		}
+	}
+	return ""
 }
 
 func clamp(v, lo, hi int) int {
