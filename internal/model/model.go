@@ -311,7 +311,7 @@ func (m *Model) cursorInfo() string {
 					}
 					ts := ""
 					if s.StartedAt > 0 {
-						ts = " · " + time.Unix(s.StartedAt, 0).Format("15:04:05")
+						ts = " · started: " + time.Unix(s.StartedAt/1000, 0).Format("2006-01-02 15:04:05")
 					}
 					return name + ts
 				}

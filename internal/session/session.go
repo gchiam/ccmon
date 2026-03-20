@@ -2,6 +2,7 @@
 package session
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -86,14 +87,79 @@ func FindJSONLPath(cwd, sessionID string) string {
 // FindJSONLPathIn is the testable variant that accepts an explicit projects directory.
 // It encodes the cwd with the same algorithm Claude Code uses, then looks for that
 // directory name. This avoids the fragility of reverse-decoding directory names.
+//
+// Lookup order:
+//  1. Exact match: <baseDir>/<encoded>/<sessionID>.jsonl
+//  2. sessions-index.json lookup in the project directory
+//  3. Most recently modified .jsonl in the project directory
 func FindJSONLPathIn(baseDir, cwd, sessionID string) string {
 	encoded := encodeCwd(cwd)
 	if encoded == "" {
 		return ""
 	}
-	candidate := filepath.Join(baseDir, encoded, sessionID+".jsonl")
+	projDir := filepath.Join(baseDir, encoded)
+
+	// 1. Exact match.
+	candidate := filepath.Join(projDir, sessionID+".jsonl")
 	if _, err := os.Stat(candidate); err == nil {
 		return candidate
 	}
+
+	// 2. Check sessions-index.json for the sessionID.
+	if path := lookupSessionsIndex(projDir, sessionID); path != "" {
+		return path
+	}
+
+	// 3. Fall back to the most recently modified .jsonl in the project directory.
+	return mostRecentJSONL(projDir)
+}
+
+// sessionsIndex mirrors the relevant fields of ~/.claude/projects/<proj>/sessions-index.json.
+type sessionsIndex struct {
+	Entries []struct {
+		SessionID string `json:"sessionId"`
+		FullPath  string `json:"fullPath"`
+	} `json:"entries"`
+}
+
+func lookupSessionsIndex(projDir, sessionID string) string {
+	data, err := os.ReadFile(filepath.Join(projDir, "sessions-index.json"))
+	if err != nil {
+		return ""
+	}
+	var idx sessionsIndex
+	if err := json.Unmarshal(data, &idx); err != nil {
+		return ""
+	}
+	for _, e := range idx.Entries {
+		if e.SessionID == sessionID && e.FullPath != "" {
+			if _, err := os.Stat(e.FullPath); err == nil {
+				return e.FullPath
+			}
+		}
+	}
 	return ""
+}
+
+func mostRecentJSONL(projDir string) string {
+	entries, err := os.ReadDir(projDir)
+	if err != nil {
+		return ""
+	}
+	var best string
+	var bestTime int64
+	for _, e := range entries {
+		if e.IsDir() || filepath.Ext(e.Name()) != ".jsonl" {
+			continue
+		}
+		info, err := e.Info()
+		if err != nil {
+			continue
+		}
+		if t := info.ModTime().UnixNano(); t > bestTime {
+			bestTime = t
+			best = filepath.Join(projDir, e.Name())
+		}
+	}
+	return best
 }

@@ -134,7 +134,7 @@ func formatStart(unix int64) string {
 	if unix == 0 {
 		return ""
 	}
-	return time.Unix(unix, 0).Format("15:04:05")
+	return time.Unix(unix/1000, 0).Format("15:04:05")
 }
 
 // CountSessions returns the total number of sessions across all groups.
