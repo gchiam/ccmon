@@ -2,6 +2,8 @@
 package ui
 
 import (
+	"strings"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -17,19 +19,27 @@ var (
 			Foreground(Dim)
 )
 
-const defaultHint = " ↑↓ nav · Space collapse · Enter select · Tab switch · q quit"
+const defaultHint = "↑↓ nav · Space collapse · Enter select · Tab switch · q quit "
 
 // RenderStatusBar renders the footer bar.
-// warn takes priority; info shows full details of the highlighted item; falls back to hint.
+// warn is shown on the left when fsnotify is unavailable; info shows full details of
+// the highlighted item on the left. Keyboard hints are always right-aligned.
 func RenderStatusBar(warn, info string, width int) string {
-	var content string
-	switch {
-	case warn != "":
-		content = warnBarStyle.Render(" ⚠ " + warn)
-	case info != "":
-		content = lipgloss.NewStyle().Foreground(Muted).Render(" " + info)
-	default:
-		content = hintBarStyle.Render(defaultHint)
+	hint := hintBarStyle.Render(defaultHint)
+	hintW := lipgloss.Width(hint)
+
+	var left string
+	if warn != "" {
+		left = warnBarStyle.Render(" ⚠ " + warn)
+	} else if info != "" {
+		left = lipgloss.NewStyle().Foreground(Muted).Render(" " + info)
 	}
-	return statusBarStyle.Width(width).Render(padRight(content, width))
+
+	leftW := lipgloss.Width(left)
+	gap := width - leftW - hintW
+	if gap < 1 {
+		gap = 1
+	}
+	content := left + strings.Repeat(" ", gap) + hint
+	return statusBarStyle.Width(width).Render(content)
 }

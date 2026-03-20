@@ -189,11 +189,7 @@ func (m *Model) View() string {
 	leftPanel := ui.RenderSessionList(m.groups, m.selectedID, m.listState, leftWidth, contentHeight)
 	rightPanel := ui.RenderConversation(m.entries, m.convScroll, rightWidth, contentHeight)
 	divider := renderDivider(contentHeight)
-	info := ""
-	if lipgloss.Width(m.cursorInfo()) > leftWidth {
-		info = m.cursorInfo()
-	}
-	footer := ui.RenderStatusBar(m.watchWarn, info, m.width)
+	footer := ui.RenderStatusBar(m.watchWarn, m.cursorInfo(), m.width)
 
 	body := lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, divider, rightPanel)
 	return lipgloss.JoinVertical(lipgloss.Left, header, body, footer)
