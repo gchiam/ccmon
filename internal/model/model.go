@@ -138,8 +138,6 @@ func (m *Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "enter":
 		if !m.focusRight {
 			m.selectCurrent()
-			m.focusRight = true
-			m.listState.FocusedPanel = 1
 		}
 	}
 	return m, nil
