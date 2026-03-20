@@ -55,7 +55,7 @@ func RenderSessionList(groups []session.ProjectGroup, selected string, state Ses
 		}
 		groupLine := projectHeaderStyle.Render(fmt.Sprintf(" %s %s", arrow, strings.ToUpper(g.Name)))
 		if flatIdx == state.Cursor && state.FocusedPanel == 0 {
-			groupLine = selectedRowStyle.Render(padRight(strings.ToUpper(g.Name), width))
+			groupLine = selectedRowStyle.Render(padRight(fmt.Sprintf(" %s %s", arrow, strings.ToUpper(g.Name)), width))
 		}
 		lines = append(lines, padRight(groupLine, width))
 		flatIdx++
@@ -65,7 +65,7 @@ func RenderSessionList(groups []session.ProjectGroup, selected string, state Ses
 				row := renderSessionRow(s, selected, state)
 				if flatIdx == state.Cursor && state.FocusedPanel == 0 {
 					// Strip ANSI codes so selectedRowStyle gets a clean string to style.
-					row = selectedRowStyle.Render(padRight(lipgloss.NewStyle().Render(stripANSI(row)), width))
+					row = selectedRowStyle.Render(padRight(stripANSI(row), width))
 				}
 				lines = append(lines, padRight(row, width))
 				flatIdx++
@@ -111,7 +111,8 @@ func renderSessionRow(s *session.Session, selected string, state SessionListStat
 	return fmt.Sprintf("%s%s %-14s %s", prefix, dot, name, dimStyle.Render(ts))
 }
 
-// stripANSI removes ANSI escape sequences from s so it can be re-styled cleanly.
+// stripANSI removes SGR color escape sequences (ESC[...m) from s so it can be re-styled cleanly.
+// It only handles SGR codes (ending in 'm'), which is what lipgloss emits.
 func stripANSI(s string) string {
 	var out strings.Builder
 	inEsc := false

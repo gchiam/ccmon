@@ -77,7 +77,7 @@ func renderEntry(e model.ConversationEntry, width int) []string {
 
 func renderEmpty(width, height int) string {
 	msg := "No conversation history yet"
-	pad := (width - len(msg)) / 2
+	pad := (width - lipgloss.Width(msg)) / 2
 	if pad < 0 {
 		pad = 0
 	}
@@ -102,11 +102,12 @@ func WrapText(text string, width int, indent string) string {
 	}
 	var out []string
 	for _, para := range strings.Split(text, "\n") {
-		for len(para) > width {
-			out = append(out, indent+para[:width])
-			para = para[width:]
+		runes := []rune(para)
+		for len(runes) > width {
+			out = append(out, indent+string(runes[:width]))
+			runes = runes[width:]
 		}
-		out = append(out, indent+para)
+		out = append(out, indent+string(runes))
 	}
 	return strings.Join(out, "\n")
 }
