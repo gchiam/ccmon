@@ -54,10 +54,10 @@ func TestIsAlive_InvalidPID(t *testing.T) {
 
 func TestFindJSONLPath_Match(t *testing.T) {
 	// Set up a fake ~/.claude/projects/ layout in a temp dir.
-	// Encoding: strip leading '/', replace '/' with '-'.
-	// cwd = "/Users/alice/myproject" -> encoded dir = "Users-alice-myproject"
+	// Encoding: replace every '/' with '-' (including leading '/').
+	// cwd = "/Users/alice/myproject" -> encoded dir = "-Users-alice-myproject"
 	projectsDir := t.TempDir()
-	encodedDir := "Users-alice-myproject"
+	encodedDir := "-Users-alice-myproject"
 	sessionID := "test-session-id"
 	jsonlDir := filepath.Join(projectsDir, encodedDir)
 	os.MkdirAll(jsonlDir, 0755)
@@ -71,11 +71,11 @@ func TestFindJSONLPath_Match(t *testing.T) {
 }
 
 func TestFindJSONLPath_DashInDirName(t *testing.T) {
-	// cwd = "/Users/alice/my-project" -> encoded dir = "Users-alice-my-project"
+	// cwd = "/Users/alice/my-project" -> encoded dir = "-Users-alice-my-project"
 	// A naive reverse-decode would mistake "my-project" as "my/project". This test
 	// verifies the forward-encoding approach handles it correctly.
 	projectsDir := t.TempDir()
-	encodedDir := "Users-alice-my-project"
+	encodedDir := "-Users-alice-my-project"
 	sessionID := "sess-1"
 	jsonlDir := filepath.Join(projectsDir, encodedDir)
 	os.MkdirAll(jsonlDir, 0755)
