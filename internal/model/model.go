@@ -127,6 +127,8 @@ func (m *Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "enter":
 		if !m.focusRight {
 			m.selectCurrent()
+			m.focusRight = true
+			m.listState.FocusedPanel = 1
 		}
 	}
 	return m, nil
@@ -187,7 +189,8 @@ func (m *Model) View() string {
 
 	header := renderHeader(m.selectedID, m.groups, leftWidth, rightWidth)
 	leftPanel := ui.RenderSessionList(m.groups, m.selectedID, m.listState, leftWidth, contentHeight)
-	rightPanel := ui.RenderConversation(m.entries, m.convScroll, rightWidth, contentHeight)
+	var rightPanel string
+	rightPanel, m.convScroll = ui.RenderConversation(m.entries, m.convScroll, rightWidth, contentHeight)
 	divider := renderDivider(contentHeight)
 	footer := ui.RenderStatusBar(m.watchWarn, m.cursorInfo(), m.width)
 

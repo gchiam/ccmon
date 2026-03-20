@@ -23,9 +23,10 @@ var (
 )
 
 // RenderConversation renders the right panel.
-func RenderConversation(entries []ConversationEntry, scroll, width, height int) string {
+// RenderConversation renders the right panel and returns the clamped scroll position.
+func RenderConversation(entries []ConversationEntry, scroll, width, height int) (string, int) {
 	if len(entries) == 0 {
-		return renderEmpty(width, height)
+		return renderEmpty(width, height), 0
 	}
 
 	var all []string
@@ -49,7 +50,7 @@ func RenderConversation(entries []ConversationEntry, scroll, width, height int) 
 	for len(visible) < height {
 		visible = append(visible, strings.Repeat(" ", width))
 	}
-	return convPanelStyle.Render(strings.Join(visible, "\n"))
+	return convPanelStyle.Render(strings.Join(visible, "\n")), scroll
 }
 
 func renderEntry(e ConversationEntry, width int) []string {
