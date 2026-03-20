@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ccmon Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #c6d0f5;
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 3rem;
+            border-bottom: 2px solid #414559;
+            padding-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #ca9ee6;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #949cbb;
+            font-size: 1rem;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section h2 {
+            font-size: 1.5rem;
+            color: #a6d189;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 24px;
+            background: #e5c890;
+            border-radius: 2px;
+        }
+
+        /* Diagram Styles */
+        .diagram {
+            background: #292c3c;
+            border: 1px solid #414559;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        /* System Overview - Visual Components */
+        .system-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .diagram-tier {
+            display: flex;
+            align-items: stretch;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .box {
+            background: #232634;
+            border: 2px solid #414559;
+            border-radius: 6px;
+            padding: 1.5rem;
+            min-width: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .box:hover {
+            background: #2a2d3a;
+            border-color: #a6d189;
+            box-shadow: 0 0 16px rgba(166, 209, 137, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .box-title {
+            color: #8caaee;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .box-desc {
+            color: #949cbb;
+            font-size: 0.8rem;
+            line-height: 1.3;
+        }
+
+        .box.entrypoint {
+            border-color: #ca9ee6;
+            background: rgba(202, 158, 230, 0.05);
+        }
+
+        .box.entrypoint .box-title {
+            color: #ca9ee6;
+        }
+
+        .box.goroutine {
+            border-color: #a6d189;
+            background: rgba(166, 209, 137, 0.05);
+        }
+
+        .box.goroutine .box-title {
+            color: #a6d189;
+        }
+
+        .box.model {
+            border-color: #8caaee;
+            background: rgba(140, 170, 238, 0.05);
+        }
+
+        .box.model .box-title {
+            color: #8caaee;
+        }
+
+        .vertical-connector {
+            width: 2px;
+            background: linear-gradient(180deg, #414559, #949cbb, #414559);
+            position: relative;
+            min-height: 40px;
+        }
+
+        .vertical-connector::after {
+            content: '↓';
+            position: absolute;
+            left: 50%;
+            bottom: -12px;
+            transform: translateX(-50%);
+            color: #949cbb;
+            font-size: 1.2rem;
+        }
+
+        .horizontal-connector {
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, #414559, #949cbb, #414559);
+            position: relative;
+            min-width: 40px;
+        }
+
+        .horizontal-connector::after {
+            content: '→';
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #949cbb;
+            font-size: 1.2rem;
+        }
+
+        .layer {
+            background: #1e2030;
+            border: 2px solid #414559;
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .layer-title {
+            position: absolute;
+            top: -12px;
+            left: 1rem;
+            background: #292c3c;
+            padding: 0 0.5rem;
+            color: #ca9ee6;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .components {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .component {
+            background: #232634;
+            border: 1px solid #414559;
+            border-radius: 4px;
+            padding: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .component:hover {
+            background: #2a2d3a;
+            border-color: #a6d189;
+            box-shadow: 0 0 12px rgba(166, 209, 137, 0.2);
+        }
+
+        .component-name {
+            color: #8caaee;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .component-desc {
+            color: #949cbb;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .flow-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .flow-box {
+            background: #232634;
+            border: 2px solid #414559;
+            border-radius: 4px;
+            padding: 1rem;
+            min-width: 150px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .flow-box.source {
+            border-color: #a6d189;
+            color: #a6d189;
+        }
+
+        .flow-box.process {
+            border-color: #8caaee;
+            color: #8caaee;
+        }
+
+        .flow-box.sink {
+            border-color: #ca9ee6;
+            color: #ca9ee6;
+        }
+
+        .flow-arrow {
+            flex-grow: 1;
+            height: 2px;
+            background: linear-gradient(90deg, #414559, #949cbb, #414559);
+            position: relative;
+        }
+
+        .flow-arrow::after {
+            content: '→';
+            position: absolute;
+            right: -8px;
+            top: -12px;
+            font-size: 1.5rem;
+            color: #949cbb;
+        }
+
+        .flow-label {
+            color: #949cbb;
+            font-size: 0.85rem;
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .message-spec {
+            background: #1e2030;
+            border-left: 3px solid #e5c890;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 2px;
+        }
+
+        .message-type {
+            color: #e5c890;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .message-fields {
+            color: #949cbb;
+            font-size: 0.85rem;
+            margin-left: 1rem;
+        }
+
+        .message-fields li {
+            list-style: none;
+            margin: 0.2rem 0;
+        }
+
+        .message-fields code {
+            color: #a6d189;
+            background: rgba(166, 209, 137, 0.1);
+            padding: 0 0.3rem;
+            border-radius: 2px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .highlight {
+            background: rgba(202, 158, 230, 0.1);
+            border-left: 3px solid #ca9ee6;
+            padding: 1rem;
+            border-radius: 2px;
+            margin: 1rem 0;
+        }
+
+        .highlight strong {
+            color: #ca9ee6;
+        }
+
+        code {
+            background: #1e2030;
+            padding: 0.2rem 0.4rem;
+            border-radius: 2px;
+            color: #a6d189;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: #1e2030;
+            border: 1px solid #414559;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            color: #c6d0f5;
+            font-size: 0.85rem;
+        }
+
+        .package-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .package {
+            background: #232634;
+            border: 1px solid #414559;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+
+        .package-name {
+            color: #8caaee;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .package-files {
+            color: #949cbb;
+            font-size: 0.8rem;
+        }
+
+        .package-files div {
+            margin: 0.2rem 0;
+            color: #a6d189;
+        }
+
+        .lifecycle {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .lifecycle-stage {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+
+        .lifecycle-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: #ca9ee6;
+            color: #0a0e27;
+            border-radius: 50%;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .lifecycle-content {
+            flex: 1;
+            background: #232634;
+            border: 1px solid #414559;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+
+        .lifecycle-content strong {
+            color: #8caaee;
+        }
+
+        .lifecycle-stage:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 40px;
+            width: 2px;
+            height: 60px;
+            background: linear-gradient(180deg, #414559, transparent);
+        }
+
+        .tui-panel {
+            background: #292c3c;
+            border: 1px solid #414559;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .tui-header {
+            background: #232634;
+            color: #ca9ee6;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #414559;
+        }
+
+        .tui-content {
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #c6d0f5;
+        }
+
+        .tui-session-item {
+            padding: 0.4rem 0;
+            color: #949cbb;
+        }
+
+        .tui-session-item.selected {
+            background: #414559;
+            color: #8caaee;
+            padding: 0.4rem 0.5rem;
+            margin: 0 -0.5rem;
+        }
+
+        .tui-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .tui-dot.alive {
+            background: #a6d189;
+        }
+
+        .tui-dot.selected {
+            background: #8caaee;
+        }
+
+        .tui-dot.unread {
+            background: #e5c890;
+        }
+
+        .tui-conversation {
+            color: #949cbb;
+            font-size: 0.8rem;
+        }
+
+        .tui-human {
+            color: #8caaee;
+            margin-top: 0.5rem;
+        }
+
+        .tui-assistant {
+            color: #a6d189;
+            margin-top: 0.5rem;
+        }
+
+        .tui-tool {
+            color: #e5c890;
+            margin-top: 0.5rem;
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid #414559;
+            color: #626880;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ccmon Architecture</h1>
+            <p class="subtitle">Claude Sessions Terminal UI - Component Relationships & Data Flow</p>
+        </header>
+
+        <!-- System Overview -->
+        <section class="section">
+            <h2>System Overview</h2>
+            <div class="diagram">
+                <div class="highlight">
+                    <strong>ccmon</strong> is a single Go binary that monitors all active Claude Code sessions on the local machine. It uses <strong>Bubble Tea</strong> for TUI rendering, with two concurrent background goroutines (watcher and reader) that emit typed messages to communicate state changes.
+                </div>
+
+                <div class="system-diagram" style="margin-top: 2rem;">
+                    <div class="diagram-tier">
+                        <div class="box entrypoint">
+                            <div class="box-title">main.go</div>
+                            <div class="box-desc">Startup, wire components, manage reader lifecycle</div>
+                        </div>
+                    </div>
+
+                    <div class="vertical-connector"></div>
+
+                    <div class="diagram-tier">
+                        <div class="box goroutine">
+                            <div class="box-title">Session Watcher</div>
+                            <div class="box-desc">fsnotify loop, session lifecycle, PID checks</div>
+                        </div>
+                        <div class="horizontal-connector"></div>
+                        <div class="box goroutine">
+                            <div class="box-title">Conversation Reader</div>
+                            <div class="box-desc">Poll JSONL at 500ms, parse entries</div>
+                        </div>
+                    </div>
+
+                    <div class="vertical-connector"></div>
+
+                    <div class="diagram-tier">
+                        <div class="box model">
+                            <div class="box-title">Bubble Tea Model</div>
+                            <div class="box-desc">State machine, keyboard input, rendering</div>
+                        </div>
+                    </div>
+
+                    <div class="vertical-connector"></div>
+
+                    <div class="diagram-tier">
+                        <div class="box">
+                            <div class="box-title">UI Render</div>
+                            <div class="box-desc">Session list, conversation, status bar</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Message Types -->
+        <section class="section">
+            <h2>Message Types & Flow</h2>
+            <div class="diagram">
+                <div class="flow-diagram">
+                    <div class="flow-item">
+                        <div class="flow-box source">Session Change</div>
+                        <div class="flow-arrow"><div class="flow-label">SessionsUpdatedMsg</div></div>
+                        <div class="flow-box process">Model.Update()</div>
+                    </div>
+
+                    <div class="flow-item">
+                        <div class="flow-box source">JSONL Growth</div>
+                        <div class="flow-arrow"><div class="flow-label">UnreadMsg</div></div>
+                        <div class="flow-box process">Model.Update()</div>
+                    </div>
+
+                    <div class="flow-item">
+                        <div class="flow-box source">New Entries</div>
+                        <div class="flow-arrow"><div class="flow-label">ConversationMsg</div></div>
+                        <div class="flow-box process">Model.Update()</div>
+                    </div>
+
+                    <div class="flow-item">
+                        <div class="flow-box source">fsnotify Fail</div>
+                        <div class="flow-arrow"><div class="flow-label">WatchErrorMsg</div></div>
+                        <div class="flow-box process">Show Warning</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <h3 style="color: #a6d189; margin-bottom: 1rem; font-size: 1rem;">Message Specifications</h3>
+
+                    <div class="message-spec">
+                        <div class="message-type">SessionsUpdatedMsg</div>
+                        <ul class="message-fields">
+                            <li><code>Sessions</code>: []*Session — all current sessions</li>
+                            <li><strong>Emitted by:</strong> Watcher on CREATE/REMOVE in ~/.claude/sessions/</li>
+                            <li><strong>Frequency:</strong> Instant (fsnotify) or ~2s (polling fallback)</li>
+                        </ul>
+                    </div>
+
+                    <div class="message-spec">
+                        <div class="message-type">UnreadMsg</div>
+                        <ul class="message-fields">
+                            <li><code>SessionID</code>: string — which session has new activity</li>
+                            <li><strong>Emitted by:</strong> Watcher when non-selected session JSONL grows</li>
+                            <li><strong>Frequency:</strong> Instant (fsnotify) or ~2s (polling)</li>
+                        </ul>
+                    </div>
+
+                    <div class="message-spec">
+                        <div class="message-type">ConversationMsg</div>
+                        <ul class="message-fields">
+                            <li><code>SessionID</code>: string — which session this belongs to</li>
+                            <li><code>Entries</code>: []ConversationEntry — parsed lines from JSONL</li>
+                            <li><strong>Emitted by:</strong> Reader polling the selected session JSONL</li>
+                            <li><strong>Frequency:</strong> ~500ms, only when file grows</li>
+                        </ul>
+                    </div>
+
+                    <div class="message-spec">
+                        <div class="message-type">WatchErrorMsg</div>
+                        <ul class="message-fields">
+                            <li><code>Err</code>: error — fsnotify setup failure</li>
+                            <li><strong>Emitted by:</strong> Watcher on NewWatcher() or Add() failure</li>
+                            <li><strong>Effect:</strong> UI shows amber warning "File watching unavailable — polling every 2s"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architectural Layers -->
+        <section class="section">
+            <h2>Architectural Layers</h2>
+            <div class="diagram">
+                <div class="layer">
+                    <div class="layer-title">UI Layer (Presentation)</div>
+                    <div class="components">
+                        <div class="component">
+                            <div class="component-name">Bubble Tea Model</div>
+                            <div class="component-desc">TUI state machine. Handles keyboard input, renders layout via lipgloss.</div>
+                        </div>
+                        <div class="component">
+                            <div class="component-name">Session List Panel</div>
+                            <div class="component-desc">Left pane: project groups, session rows, status dots, unread indicators.</div>
+                        </div>
+                        <div class="component">
+                            <div class="component-name">Conversation Panel</div>
+                            <div class="component-desc">Right pane: scrollable conversation history (human, assistant, tool calls).</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="layer">
+                    <div class="layer-title">Business Logic (Domain)</div>
+                    <div class="components">
+                        <div class="component">
+                            <div class="component-name">Session Watcher</div>
+                            <div class="component-desc">Monitors ~/.claude/sessions/ via fsnotify. Detects liveness with kill -0. Groups by project.</div>
+                        </div>
+                        <div class="component">
+                            <div class="component-name">Conversation Reader</div>
+                            <div class="component-desc">Polls selected session JSONL at 500ms intervals. Parses human, assistant, tool calls.</div>
+                        </div>
+                        <div class="component">
+                            <div class="component-name">Session Model</div>
+                            <div class="component-desc">Types: Session, ProjectGroup. Utilities: ParseCwd, IsAlive, FindJSONLPath.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="layer">
+                    <div class="layer-title">Data Sources (External)</div>
+                    <div class="components">
+                        <div class="component">
+                            <div class="component-name">~/.claude/sessions/</div>
+                            <div class="component-desc">Directory with &lt;pid&gt;.json files. Each contains PID, sessionId, cwd, startedAt.</div>
+                        </div>
+                        <div class="component">
+                            <div class="component-name">~/.claude/projects/</div>
+                            <div class="component-desc">Encoded cwd dirs containing &lt;sessionId&gt;.jsonl files with conversation history.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TUI Preview -->
+        <section class="section">
+            <h2>TUI Layout Preview</h2>
+            <div class="diagram">
+                <div class="tui-panel" style="display: flex; height: 300px;">
+                    <!-- Left Panel -->
+                    <div style="width: 25%; border-right: 1px solid #414559;">
+                        <div class="tui-header">SESSIONS (3)</div>
+                        <div class="tui-content">
+                            <div style="color: #ca9ee6; font-weight: 600; margin-bottom: 0.5rem;">▼ PROJECT-A</div>
+                            <div class="tui-session-item selected">
+                                <span class="tui-dot selected"></span>● main
+                            </div>
+                            <div class="tui-session-item">
+                                <span class="tui-dot unread"></span>✦ ⎇ feat-x
+                            </div>
+                            <div style="color: #ca9ee6; font-weight: 600; margin: 1rem 0 0.5rem;">▼ PROJECT-B</div>
+                            <div class="tui-session-item">
+                                <span class="tui-dot alive"></span>● main
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel -->
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <div class="tui-header">CONVERSATION · PROJECT-A · ⎇ main</div>
+                        <div class="tui-content" style="flex: 1; overflow-y: auto;">
+                            <div class="tui-human">
+                                ▶ human · 14:23:01<br>
+                                <span style="color: #949cbb; margin-left: 1.5rem;">How do I parse JSON in Go?</span>
+                            </div>
+
+                            <div class="tui-assistant" style="margin-top: 1rem;">
+                                ◀ assistant · 14:23:05<br>
+                                <span style="color: #949cbb; margin-left: 1.5rem;">Use the encoding/json package...</span>
+                            </div>
+
+                            <div class="tui-tool" style="margin-top: 1rem;">
+                                ⚙ Bash · 14:23:08<br>
+                                <div style="background: #1e2030; padding: 0.5rem; margin: 0.5rem 0; border-radius: 2px; color: #a6d189;">
+                                    go doc encoding/json
+                                </div>
+                                → Output: package json, type Decoder...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Package Layout -->
+        <section class="section">
+            <h2>Package Structure</h2>
+            <div class="diagram">
+                <div class="package-list">
+                    <div class="package">
+                        <div class="package-name">cmd/ccmon/</div>
+                        <div class="package-files">
+                            <div>main.go</div>
+                            <p style="color: #626880; margin-top: 0.3rem; font-size: 0.75rem;">Entrypoint, wires components, manages reader lifecycle</p>
+                        </div>
+                    </div>
+
+                    <div class="package">
+                        <div class="package-name">internal/session/</div>
+                        <div class="package-files">
+                            <div>session.go</div>
+                            <div>session_test.go</div>
+                            <p style="color: #626880; margin-top: 0.3rem; font-size: 0.75rem;">Session struct, ParseCwd, IsAlive, FindJSONLPath</p>
+                        </div>
+                    </div>
+
+                    <div class="package">
+                        <div class="package-name">internal/watcher/</div>
+                        <div class="package-files">
+                            <div>watcher.go</div>
+                            <div>watcher_test.go</div>
+                            <p style="color: #626880; margin-top: 0.3rem; font-size: 0.75rem;">fsnotify loop, SessionsUpdatedMsg, UnreadMsg</p>
+                        </div>
+                    </div>
+
+                    <div class="package">
+                        <div class="package-name">internal/reader/</div>
+                        <div class="package-files">
+                            <div>reader.go</div>
+                            <div>reader_test.go</div>
+                            <p style="color: #626880; margin-top: 0.3rem; font-size: 0.75rem;">500ms JSONL polling, ParseLine, ConversationMsg</p>
+                        </div>
+                    </div>
+
+                    <div class="package">
+                        <div class="package-name">internal/model/</div>
+                        <div class="package-files">
+                            <div>model.go</div>
+                            <div>messages.go</div>
+                            <p style="color: #626880; margin-top: 0.3rem; font-size: 0.75rem;">Bubble Tea model, message types, state</p>
+                        </div>
+                    </div>
+
+                    <div class="package">
+                        <div class="package-name">internal/ui/</div>
+                        <div class="package-files">
+                            <div>colors.go</div>
+                            <div>session_list.go</div>
+                            <div>conversation.go</div>
+                            <div>status_bar.go</div>
+                            <p style="color: #626880; margin-top: 0.3rem; font-size: 0.75rem;">Catppuccin palette, renderers</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Goroutine Lifecycle -->
+        <section class="section">
+            <h2>Goroutine Lifecycle & Reader Management</h2>
+            <div class="diagram">
+                <div class="lifecycle">
+                    <div class="lifecycle-stage">
+                        <div class="lifecycle-number">1</div>
+                        <div class="lifecycle-content">
+                            <strong>main() starts</strong> — Creates Bubble Tea program, initializes Model, starts Watcher goroutine, registers OnSelectSession callback.
+                        </div>
+                    </div>
+
+                    <div class="lifecycle-stage">
+                        <div class="lifecycle-number">2</div>
+                        <div class="lifecycle-content">
+                            <strong>Watcher goroutine runs</strong> — Monitors ~/.claude/sessions/ for session create/remove events. Watches selected session JSONL for growth (unread indicator). Emits SessionsUpdatedMsg, UnreadMsg, WatchErrorMsg to Model.
+                        </div>
+                    </div>
+
+                    <div class="lifecycle-stage">
+                        <div class="lifecycle-number">3</div>
+                        <div class="lifecycle-content">
+                            <strong>User selects session (Enter)</strong> — Model.selectCurrent() finds session, calls onSelectSession(s), clears conversation entries, resets scroll, clears unread flag.
+                        </div>
+                    </div>
+
+                    <div class="lifecycle-stage">
+                        <div class="lifecycle-number">4</div>
+                        <div class="lifecycle-content">
+                            <strong>main.go creates fresh Reader</strong> — OnSelectSession callback: cancels previous Reader's context (if any), creates new context, constructs new Reader (stateless), starts new goroutine <code>go r.Run(ctx)</code>.
+                        </div>
+                    </div>
+
+                    <div class="lifecycle-stage">
+                        <div class="lifecycle-number">5</div>
+                        <div class="lifecycle-content">
+                            <strong>Reader goroutine runs</strong> — Polls selected session JSONL at 500ms intervals. Reads new bytes, parses lines into ConversationEntry. Emits ConversationMsg to program.Send(), which Model receives.
+                        </div>
+                    </div>
+
+                    <div class="lifecycle-stage">
+                        <div class="lifecycle-number">6</div>
+                        <div class="lifecycle-content">
+                            <strong>User selects different session or quits</strong> — Model calls onSelectSession() with new session (or nil). main.go's callback cancels previous Reader context. Reader.Run() returns, goroutine exits. New Reader created if new session selected.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight">
+                    <strong>Key design:</strong> Reader is <strong>stateless between sessions</strong>. Each new selection creates a fresh Reader struct with a fresh context. Old reader's context is cancelled before new reader starts. This avoids data races on the <code>offset</code> field.
+                </div>
+            </div>
+        </section>
+
+        <!-- Dependencies -->
+        <section class="section">
+            <h2>External Dependencies</h2>
+            <div class="diagram">
+                <div class="grid-2">
+                    <div>
+                        <h3 style="color: #a6d189; margin-bottom: 1rem;">Direct Dependencies</h3>
+                        <div class="package-list" style="grid-template-columns: 1fr;">
+                            <div class="package">
+                                <div class="package-name">bubbletea</div>
+                                <div class="package-files">
+                                    <p style="color: #626880; font-size: 0.75rem;">TUI framework: event loop, rendering, input handling</p>
+                                </div>
+                            </div>
+                            <div class="package">
+                                <div class="package-name">lipgloss</div>
+                                <div class="package-files">
+                                    <p style="color: #626880; font-size: 0.75rem;">Styling: colors, layout, positioning, rendering</p>
+                                </div>
+                            </div>
+                            <div class="package">
+                                <div class="package-name">fsnotify</div>
+                                <div class="package-files">
+                                    <p style="color: #626880; font-size: 0.75rem;">File system watching: CREATE/REMOVE events on directories</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 style="color: #a6d189; margin-bottom: 1rem;">Go Standard Library</h3>
+                        <div class="package-list" style="grid-template-columns: 1fr;">
+                            <div class="package">
+                                <div class="package-name">os</div>
+                                <div class="package-files">
+                                    <p style="color: #626880; font-size: 0.75rem;">File I/O, home dir, process signals</p>
+                                </div>
+                            </div>
+                            <div class="package">
+                                <div class="package-name">syscall</div>
+                                <div class="package-files">
+                                    <p style="color: #626880; font-size: 0.75rem;">PID liveness check: <code>kill -0</code></p>
+                                </div>
+                            </div>
+                            <div class="package">
+                                <div class="package-name">encoding/json</div>
+                                <div class="package-files">
+                                    <p style="color: #626880; font-size: 0.75rem;">Parse session and JSONL files</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Design Notes -->
+        <section class="section">
+            <h2>Architectural Design Notes</h2>
+            <div class="diagram">
+                <div class="highlight">
+                    <strong>Message-Driven Architecture:</strong> Watcher and Reader don't call Model directly. They emit typed tea.Msg values to the Bubble Tea program via <code>program.Send()</code>. Model handles all messages in <code>Update()</code>. This decouples goroutines from TUI logic and prevents race conditions.
+                </div>
+
+                <div class="highlight">
+                    <strong>Reader Statelessness:</strong> Each session selection creates a brand-new Reader instance. The old reader's context is cancelled. This eliminates data races on the <code>offset</code> field that tracks file position. No need for synchronization primitives (mutexes) for reader state.
+                </div>
+
+                <div class="highlight">
+                    <strong>fsnotify with Fallback:</strong> Watcher tries fsnotify first. If setup fails, it falls back to 2-second polling and emits WatchErrorMsg so the UI can warn the user. Sessions can always be monitored even if inotify is unavailable.
+                </div>
+
+                <div class="highlight">
+                    <strong>Lazy JSONL Resolution:</strong> FindJSONLPath is called during session load, not on startup. Only sessions with a valid JSONL path can be selected and read. Missing files don't cause errors, the right panel just shows "No conversation history yet".
+                </div>
+
+                <div class="highlight">
+                    <strong>Unread Tracking (In-Memory Only):</strong> The unread indicator (yellow dot + ✦ on session name) is stored in Model's <code>unreadSet</code> map. It's cleared when the session is selected or when the TUI restarts. No persistent storage.
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>ccmon Architecture — Data flow, components, and message patterns</p>
+            <p>Generated for implementation planning — see docs/superpowers/plans/2026-03-20-ccmon-tui.md</p>
+        </footer>
+    </div>
+</body>
+</html>

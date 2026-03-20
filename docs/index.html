@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ccmon Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #c6d0f5;
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 3rem;
+            text-align: center;
+            border-bottom: 2px solid #414559;
+            padding-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: #ca9ee6;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .tagline {
+            color: #949cbb;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .version {
+            color: #626880;
+            font-size: 0.9rem;
+        }
+
+        .content {
+            margin-bottom: 3rem;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+        }
+
+        .section h2 {
+            font-size: 1.3rem;
+            color: #a6d189;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section h2::before {
+            content: '';
+            display: inline-block;
+            width: 3px;
+            height: 20px;
+            background: #e5c890;
+            border-radius: 2px;
+        }
+
+        .section p {
+            color: #949cbb;
+            margin-bottom: 1rem;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .card {
+            background: #292c3c;
+            border: 1px solid #414559;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            background: #2a2d3a;
+            border-color: #a6d189;
+            box-shadow: 0 8px 24px rgba(166, 209, 137, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-title {
+            color: #8caaee;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-desc {
+            color: #949cbb;
+            font-size: 0.9rem;
+            flex: 1;
+            margin-bottom: 1rem;
+        }
+
+        .card-link {
+            color: #a6d189;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .card-link:hover {
+            color: #ca9ee6;
+        }
+
+        .card-link::after {
+            content: '→';
+        }
+
+        .highlight-box {
+            background: rgba(202, 158, 230, 0.1);
+            border-left: 3px solid #ca9ee6;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1.5rem 0;
+        }
+
+        .highlight-box strong {
+            color: #ca9ee6;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: #949cbb;
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #a6d189;
+            font-weight: 600;
+        }
+
+        code {
+            background: #1e2030;
+            padding: 0.2rem 0.4rem;
+            border-radius: 2px;
+            color: #a6d189;
+            font-size: 0.9em;
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid #414559;
+            color: #626880;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .repo-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.7rem 1.5rem;
+            background: #ca9ee6;
+            color: #0a0e27;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .repo-link:hover {
+            background: #b081d9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(202, 158, 230, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ccmon</h1>
+            <p class="tagline">Claude Sessions Terminal UI</p>
+            <p class="version">A Go TUI for monitoring active Claude Code sessions in real time</p>
+        </header>
+
+        <div class="content">
+            <section class="section">
+                <h2>Overview</h2>
+                <p>
+                    <strong>ccmon</strong> is a terminal UI application that monitors all active Claude Code sessions on your local machine.
+                    It displays conversation history in real time, groups sessions by project, and provides live unread indicators for new activity.
+                </p>
+                <ul class="feature-list">
+                    <li>View all active Claude Code sessions grouped by project</li>
+                    <li>Display scrollable conversation history for selected sessions</li>
+                    <li>Instant session updates via file system watching (fsnotify)</li>
+                    <li>Unread indicators for sessions with new activity</li>
+                    <li>Detect stale processes and show status indicators</li>
+                    <li>Worktree-aware session display</li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2>Documentation</h2>
+                <div class="card-grid">
+                    <a href="ccmon-architecture.html" class="card">
+                        <div class="card-icon">🏗️</div>
+                        <div class="card-title">Architecture</div>
+                        <div class="card-desc">Component relationships, data flow, message patterns, and design decisions</div>
+                        <div class="card-link">View Diagram</div>
+                    </a>
+
+                    <div class="card" style="border-color: #626880; background: #1e2030; cursor: not-allowed; opacity: 0.6;">
+                        <div class="card-icon">📋</div>
+                        <div class="card-title">API Reference</div>
+                        <div class="card-desc">Package documentation and public interfaces</div>
+                        <div class="card-link" style="color: #626880;">Coming Soon</div>
+                    </div>
+
+                    <div class="card" style="border-color: #626880; background: #1e2030; cursor: not-allowed; opacity: 0.6;">
+                        <div class="card-icon">🚀</div>
+                        <div class="card-title">Getting Started</div>
+                        <div class="card-desc">Installation, configuration, and usage guide</div>
+                        <div class="card-link" style="color: #626880;">Coming Soon</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Implementation Status</h2>
+                <div class="highlight-box">
+                    <strong>Phase 1: Foundation (In Progress)</strong><br>
+                    Setting up core infrastructure: Go module, dependencies, data model, and concurrent components (watcher, reader, UI).
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Tech Stack</h2>
+                <p>Built with:</p>
+                <ul class="feature-list">
+                    <li><strong>Language:</strong> Go 1.21+</li>
+                    <li><strong>TUI Framework:</strong> Bubble Tea</li>
+                    <li><strong>Styling:</strong> lipgloss (Catppuccin Frappé palette)</li>
+                    <li><strong>File Watching:</strong> fsnotify with polling fallback</li>
+                </ul>
+            </section>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="https://github.com/gchiam/ccmon" class="repo-link">View on GitHub</a>
+            </div>
+        </div>
+
+        <footer>
+            <p>ccmon — Claude Sessions Terminal UI</p>
+            <p>Built with Bubble Tea · Styled with Catppuccin Frappé</p>
+        </footer>
+    </div>
+</body>
+</html>
