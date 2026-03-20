@@ -200,7 +200,7 @@ func renderHeader(selectedID string, groups []session.ProjectGroup, leftW, right
 		Background(lipgloss.Color(ui.ColorHeaderFooter)).
 		Foreground(lipgloss.Color(ui.ColorProjectHeader)).
 		Width(leftW).
-		Render(" SESSIONS")
+		Render(" Sessions")
 
 	projName, worktree := "", ""
 	for _, g := range groups {
@@ -211,9 +211,9 @@ func renderHeader(selectedID string, groups []session.ProjectGroup, leftW, right
 			}
 		}
 	}
-	title := " CONVERSATION"
+	title := " Conversation"
 	if projName != "" {
-		title = fmt.Sprintf(" CONVERSATION · %s", projName)
+		title = fmt.Sprintf(" Conversation · %s", projName)
 		if worktree != "" {
 			title += fmt.Sprintf(" · ⎇ %s", worktree)
 		}

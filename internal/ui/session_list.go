@@ -43,7 +43,7 @@ type SessionListState struct {
 func RenderSessionList(groups []session.ProjectGroup, selected string, state SessionListState, width, height int) string {
 	var lines []string
 	total := CountSessions(groups)
-	header := projectHeaderStyle.Render(fmt.Sprintf(" SESSIONS (%d)", total))
+	header := projectHeaderStyle.Render(fmt.Sprintf(" Sessions (%d)", total))
 	lines = append(lines, padRight(header, width))
 
 	flatIdx := 0
@@ -53,9 +53,9 @@ func RenderSessionList(groups []session.ProjectGroup, selected string, state Ses
 		if collapsed {
 			arrow = ">"
 		}
-		groupLine := projectHeaderStyle.Render(fmt.Sprintf(" %s %s", arrow, strings.ToUpper(g.Name)))
+		groupLine := projectHeaderStyle.Render(fmt.Sprintf(" %s %s", arrow, g.Name))
 		if flatIdx == state.Cursor && state.FocusedPanel == 0 {
-			groupLine = selectedRowStyle.Render(padRight(fmt.Sprintf(" %s %s", arrow, strings.ToUpper(g.Name)), width))
+			groupLine = selectedRowStyle.Render(padRight(fmt.Sprintf(" %s %s", arrow, g.Name), width))
 		}
 		lines = append(lines, padRight(groupLine, width))
 		flatIdx++
