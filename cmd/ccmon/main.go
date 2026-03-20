@@ -55,4 +55,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}
+	if readerCancel != nil {
+		readerCancel()
+	}
 }

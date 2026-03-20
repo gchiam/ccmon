@@ -243,7 +243,7 @@ func renderFatal(msg string, w, h int) string {
 	if h <= 0 {
 		h = 24
 	}
-	pad := (w - len(msg)) / 2
+	pad := (w - lipgloss.Width(msg)) / 2
 	if pad < 0 {
 		pad = 0
 	}
