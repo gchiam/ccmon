@@ -77,7 +77,14 @@ func RenderSessionList(groups []session.ProjectGroup, selected string, state Ses
 		lines = append(lines, strings.Repeat(" ", width))
 	}
 
-	return sessionListStyle.Render(strings.Join(lines[:minInt(len(lines), height)], "\n"))
+	// Clip every line to width so long session names don't push the divider rightward.
+	clipped := lines[:minInt(len(lines), height)]
+	for i, l := range clipped {
+		if lipgloss.Width(l) > width {
+			clipped[i] = truncateLine(l, width)
+		}
+	}
+	return sessionListStyle.Width(width).Render(strings.Join(clipped, "\n"))
 }
 
 func renderSessionRow(s *session.Session, selected string, state SessionListState) string {
@@ -154,6 +161,17 @@ func padRight(s string, width int) string {
 		return s + strings.Repeat(" ", width-visible)
 	}
 	return s
+}
+
+// truncateLine clips s to at most maxW visible characters, preserving ANSI codes
+// by stripping them first and then re-rendering the plain truncated text.
+func truncateLine(s string, maxW int) string {
+	plain := stripANSI(s)
+	runes := []rune(plain)
+	if len(runes) > maxW {
+		runes = runes[:maxW]
+	}
+	return string(runes)
 }
 
 func minInt(a, b int) int {
