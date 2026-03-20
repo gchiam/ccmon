@@ -67,6 +67,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case SessionsUpdatedMsg:
 		m.groups = groupAndMerge(msg.Sessions, m.groups)
 		m.listState.UnreadSet = m.unreadSet
+		// Ensure cursor never rests on a group header.
+		if m.isGroupHeader(m.listState.Cursor) {
+			m.listState.Cursor = 1
+		}
 
 	case UnreadMsg:
 		if msg.SessionID != m.selectedID {
@@ -101,8 +105,12 @@ func (m *Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case "up":
 		if !m.focusRight {
-			if m.listState.Cursor > 0 {
-				m.listState.Cursor--
+			c := m.listState.Cursor - 1
+			for c > 0 && m.isGroupHeader(c) {
+				c--
+			}
+			if !m.isGroupHeader(c) {
+				m.listState.Cursor = c
 			}
 		} else if m.convScroll > 0 {
 			m.convScroll--
@@ -111,8 +119,12 @@ func (m *Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "down":
 		if !m.focusRight {
 			maxIdx := flatCount(m.groups, m.listState.Collapsed) - 1
-			if m.listState.Cursor < maxIdx {
-				m.listState.Cursor++
+			c := m.listState.Cursor + 1
+			for c < maxIdx && m.isGroupHeader(c) {
+				c++
+			}
+			if c <= maxIdx && !m.isGroupHeader(c) {
+				m.listState.Cursor = c
 			}
 		} else {
 			m.convScroll++
@@ -291,6 +303,21 @@ func flatCount(groups []session.ProjectGroup, collapsed map[string]bool) int {
 		}
 	}
 	return n
+}
+
+// isGroupHeader returns true if flat index idx corresponds to a group header row.
+func (m *Model) isGroupHeader(idx int) bool {
+	i := 0
+	for _, g := range m.groups {
+		if i == idx {
+			return true
+		}
+		i++
+		if !m.listState.Collapsed[g.Name] {
+			i += len(g.Sessions)
+		}
+	}
+	return false
 }
 
 func clamp(v, lo, hi int) int {
