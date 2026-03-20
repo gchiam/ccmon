@@ -42,9 +42,6 @@ type SessionListState struct {
 // RenderSessionList renders the left panel.
 func RenderSessionList(groups []session.ProjectGroup, selected string, state SessionListState, width, height int) string {
 	var lines []string
-	total := CountSessions(groups)
-	header := projectHeaderStyle.Render(fmt.Sprintf(" Sessions (%d)", total))
-	lines = append(lines, padRight(header, width))
 
 	flatIdx := 0
 	for _, g := range groups {

@@ -195,12 +195,13 @@ func (m *Model) View() string {
 }
 
 func renderHeader(selectedID string, groups []session.ProjectGroup, leftW, rightW int) string {
+	total := ui.CountSessions(groups)
 	// leftW+1 absorbs the divider column so the right header aligns with the right panel.
 	left := lipgloss.NewStyle().
 		Background(lipgloss.Color(ui.ColorHeaderFooter)).
 		Foreground(lipgloss.Color(ui.ColorProjectHeader)).
 		Width(leftW + 1).
-		Render(" Sessions")
+		Render(fmt.Sprintf(" Sessions (%d)", total))
 
 	projName, worktree := "", ""
 	for _, g := range groups {
