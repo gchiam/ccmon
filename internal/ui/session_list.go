@@ -54,16 +54,13 @@ func RenderSessionList(groups []session.ProjectGroup, selected string, state Ses
 			arrow = ">"
 		}
 		groupLine := projectHeaderStyle.Render(fmt.Sprintf(" %s %s", arrow, g.Name))
-		if flatIdx == state.Cursor && state.FocusedPanel == 0 {
-			groupLine = selectedRowStyle.Render(padRight(fmt.Sprintf(" %s %s", arrow, g.Name), width))
-		}
 		lines = append(lines, padRight(groupLine, width))
 		flatIdx++
 
 		if !collapsed {
 			for _, s := range g.Sessions {
 				row := renderSessionRow(s, selected, state)
-				if flatIdx == state.Cursor && state.FocusedPanel == 0 {
+				if flatIdx == state.Cursor {
 					// Strip ANSI codes so selectedRowStyle gets a clean string to style.
 					row = selectedRowStyle.Render(padRight(stripANSI(row), width))
 				}
