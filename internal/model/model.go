@@ -106,10 +106,10 @@ func (m *Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "up":
 		if !m.focusRight {
 			c := m.listState.Cursor - 1
-			for c > 0 && m.isGroupHeader(c) {
+			for c >= 0 && m.isGroupHeader(c) {
 				c--
 			}
-			if !m.isGroupHeader(c) {
+			if c >= 0 {
 				m.listState.Cursor = c
 			}
 		} else if m.convScroll > 0 {
@@ -120,10 +120,10 @@ func (m *Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if !m.focusRight {
 			maxIdx := flatCount(m.groups, m.listState.Collapsed) - 1
 			c := m.listState.Cursor + 1
-			for c < maxIdx && m.isGroupHeader(c) {
+			for c <= maxIdx && m.isGroupHeader(c) {
 				c++
 			}
-			if c <= maxIdx && !m.isGroupHeader(c) {
+			if c <= maxIdx {
 				m.listState.Cursor = c
 			}
 		} else {
