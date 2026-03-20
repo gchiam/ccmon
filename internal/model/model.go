@@ -182,7 +182,7 @@ func (m *Model) View() string {
 		return renderFatal("⚠ Terminal too small, resize to at least 80x24 to continue", m.width, m.height)
 	}
 
-	leftWidth := 24
+	leftWidth := clamp(m.width/4, 20, 40)
 	rightWidth := m.width - leftWidth - 1
 	contentHeight := m.height - 2
 
@@ -291,4 +291,14 @@ func flatCount(groups []session.ProjectGroup, collapsed map[string]bool) int {
 		}
 	}
 	return n
+}
+
+func clamp(v, lo, hi int) int {
+	if v < lo {
+		return lo
+	}
+	if v > hi {
+		return hi
+	}
+	return v
 }
