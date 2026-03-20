@@ -53,16 +53,15 @@ func RenderSessionList(groups []session.ProjectGroup, selected string, state Ses
 		if collapsed {
 			arrow = ">"
 		}
-		groupLine := projectHeaderStyle.Render(fmt.Sprintf(" %s %s", arrow, g.Name))
+		groupLine := projectHeaderStyle.Render(truncateLine(fmt.Sprintf(" %s %s", arrow, g.Name), width))
 		lines = append(lines, padRight(groupLine, width))
 		flatIdx++
 
 		if !collapsed {
 			for _, s := range g.Sessions {
-				row := renderSessionRow(s, selected, state)
+				row := truncateLine(renderSessionRow(s, selected, state), width)
 				if flatIdx == state.Cursor {
-					// Strip ANSI codes so selectedRowStyle gets a clean string to style.
-					row = selectedRowStyle.Render(padRight(stripANSI(row), width))
+					row = selectedRowStyle.Render(padRight(row, width))
 				}
 				lines = append(lines, padRight(row, width))
 				flatIdx++
@@ -74,14 +73,7 @@ func RenderSessionList(groups []session.ProjectGroup, selected string, state Ses
 		lines = append(lines, strings.Repeat(" ", width))
 	}
 
-	// Clip every line to width so long session names don't push the divider rightward.
-	clipped := lines[:minInt(len(lines), height)]
-	for i, l := range clipped {
-		if lipgloss.Width(l) > width {
-			clipped[i] = truncateLine(l, width)
-		}
-	}
-	return sessionListStyle.Width(width).Render(strings.Join(clipped, "\n"))
+	return sessionListStyle.Width(width).Render(strings.Join(lines[:minInt(len(lines), height)], "\n"))
 }
 
 func renderSessionRow(s *session.Session, selected string, state SessionListState) string {
