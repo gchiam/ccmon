@@ -197,10 +197,11 @@ func (m *Model) View() string {
 }
 
 func renderHeader(selectedID string, groups []session.ProjectGroup, leftW, rightW int) string {
+	// leftW+1 absorbs the divider column so the right header aligns with the right panel.
 	left := lipgloss.NewStyle().
 		Background(lipgloss.Color(ui.ColorHeaderFooter)).
 		Foreground(lipgloss.Color(ui.ColorProjectHeader)).
-		Width(leftW).
+		Width(leftW + 1).
 		Render(" Sessions")
 
 	projName, worktree := "", ""
@@ -222,7 +223,7 @@ func renderHeader(selectedID string, groups []session.ProjectGroup, leftW, right
 	right := lipgloss.NewStyle().
 		Background(lipgloss.Color(ui.ColorHeaderFooter)).
 		Foreground(lipgloss.Color(ui.ColorMuted)).
-		Width(rightW + 1).
+		Width(rightW).
 		Render(title)
 
 	return lipgloss.JoinHorizontal(lipgloss.Top, left, right)
