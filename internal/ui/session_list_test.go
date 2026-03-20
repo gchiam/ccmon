@@ -18,3 +18,18 @@ func TestCountSessions(t *testing.T) {
 		t.Errorf("got %d, want 3", got)
 	}
 }
+
+func TestWrapText_ShortLine(t *testing.T) {
+	got := ui.WrapText("hello", 80, "  ")
+	if got != "  hello" {
+		t.Errorf("got %q", got)
+	}
+}
+
+func TestWrapText_LongLine(t *testing.T) {
+	got := ui.WrapText("abcdef", 3, "")
+	// Should wrap into 2 lines: "abc" and "def"
+	if got != "abc\ndef" {
+		t.Errorf("got %q", got)
+	}
+}
