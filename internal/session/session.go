@@ -71,9 +71,10 @@ func projectsDir() string {
 }
 
 // encodeCwd converts an absolute cwd path to the directory name used by Claude Code:
-// replace every '/' with '-' (including the leading one, producing a leading '-').
+// replace every '/' and '_' with '-'.
 func encodeCwd(cwd string) string {
-	return strings.ReplaceAll(cwd, "/", "-")
+	s := strings.ReplaceAll(cwd, "/", "-")
+	return strings.ReplaceAll(s, "_", "-")
 }
 
 // FindJSONLPath resolves the JSONL path for a session using the real projects dir.
