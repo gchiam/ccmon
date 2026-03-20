@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ccmon API Reference</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #c6d0f5;
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 3rem;
+            border-bottom: 2px solid #414559;
+            padding-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #ca9ee6;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #949cbb;
+            font-size: 1rem;
+        }
+
+        .breadcrumb {
+            color: #626880;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .breadcrumb a {
+            color: #a6d189;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: #ca9ee6;
+        }
+
+        .toc {
+            background: #292c3c;
+            border: 1px solid #414559;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: sticky;
+            top: 2rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .toc h3 {
+            color: #a6d189;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-list li {
+            margin: 0.5rem 0;
+        }
+
+        .toc-list a {
+            color: #949cbb;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: block;
+            padding: 0.3rem 0.5rem;
+            border-radius: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .toc-list a:hover {
+            color: #ca9ee6;
+            background: rgba(202, 158, 230, 0.1);
+            padding-left: 1rem;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 1024px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            .toc {
+                position: static;
+                max-height: none;
+            }
+        }
+
+        .main {
+            min-width: 0;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section h2 {
+            font-size: 1.8rem;
+            color: #a6d189;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #414559;
+        }
+
+        .section h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 28px;
+            background: #e5c890;
+            border-radius: 2px;
+        }
+
+        .subsection {
+            margin-bottom: 2rem;
+        }
+
+        .subsection h3 {
+            font-size: 1.2rem;
+            color: #8caaee;
+            margin-bottom: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .subsection p {
+            color: #949cbb;
+            margin-bottom: 1rem;
+        }
+
+        .entry {
+            background: #232634;
+            border: 1px solid #414559;
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .entry:hover {
+            border-color: #a6d189;
+            box-shadow: 0 4px 12px rgba(166, 209, 137, 0.1);
+        }
+
+        .entry-name {
+            color: #8caaee;
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 0.5rem;
+            font-family: 'Monaco', 'Cascadia Code', monospace;
+        }
+
+        .entry-signature {
+            background: #1e2030;
+            border-left: 2px solid #414559;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 2px;
+            color: #a6d189;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+
+        .entry-desc {
+            color: #949cbb;
+            margin: 0.75rem 0;
+            line-height: 1.5;
+        }
+
+        .entry-fields {
+            margin-top: 1rem;
+            color: #949cbb;
+            font-size: 0.95rem;
+        }
+
+        .entry-fields strong {
+            color: #a6d189;
+        }
+
+        .field-item {
+            margin: 0.5rem 0;
+            padding-left: 1rem;
+        }
+
+        .field-type {
+            color: #ca9ee6;
+            margin-left: 0.5rem;
+        }
+
+        .tag {
+            display: inline-block;
+            background: rgba(166, 209, 137, 0.2);
+            color: #a6d189;
+            padding: 0.2rem 0.6rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tag.exported {
+            background: rgba(140, 170, 238, 0.2);
+            color: #8caaee;
+        }
+
+        .tag.interface {
+            background: rgba(202, 158, 230, 0.2);
+            color: #ca9ee6;
+        }
+
+        .tag.message {
+            background: rgba(229, 200, 144, 0.2);
+            color: #e5c890;
+        }
+
+        code {
+            background: #1e2030;
+            padding: 0.2rem 0.4rem;
+            border-radius: 2px;
+            color: #a6d189;
+            font-size: 0.9em;
+        }
+
+        .highlight {
+            background: rgba(202, 158, 230, 0.1);
+            border-left: 3px solid #ca9ee6;
+            padding: 1rem;
+            border-radius: 2px;
+            margin: 1.5rem 0;
+        }
+
+        .highlight strong {
+            color: #ca9ee6;
+        }
+
+        .package-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .package-card {
+            background: #1e2030;
+            border: 1px solid #414559;
+            border-radius: 6px;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .package-card:hover {
+            border-color: #a6d189;
+            background: #232634;
+        }
+
+        .package-card h4 {
+            color: #8caaee;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .package-card p {
+            color: #949cbb;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .example {
+            background: #1e2030;
+            border: 1px solid #414559;
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+            color: #c6d0f5;
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid #414559;
+            color: #626880;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+            justify-content: center;
+        }
+
+        .nav-links a {
+            color: #a6d189;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ca9ee6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ccmon API Reference</h1>
+            <p class="subtitle">Package Documentation & Type Signatures</p>
+            <div class="breadcrumb">
+                <a href="index.html">← Back to Documentation</a>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- Table of Contents -->
+            <nav class="toc">
+                <h3>Contents</h3>
+                <ul class="toc-list">
+                    <li><a href="#packages">Packages</a></li>
+                    <li><a href="#session">session</a></li>
+                    <li><a href="#watcher">watcher</a></li>
+                    <li><a href="#reader">reader</a></li>
+                    <li><a href="#model">model</a></li>
+                    <li><a href="#ui">ui</a></li>
+                    <li><a href="#messages">Message Types</a></li>
+                    <li><a href="#constants">Constants</a></li>
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <div class="main">
+
+                <!-- Packages Overview -->
+                <section class="section" id="packages">
+                    <h2>Packages</h2>
+                    <div class="package-overview">
+                        <div class="package-card">
+                            <h4>internal/session</h4>
+                            <p>Core data types and utilities for session management: Session struct, ProjectGroup, path parsing (ParseCwd), liveness checking (IsAlive), and JSONL path resolution.</p>
+                        </div>
+                        <div class="package-card">
+                            <h4>internal/watcher</h4>
+                            <p>File system monitoring with fsnotify. Detects session creation/removal, tracks JSONL growth, emits SessionsUpdatedMsg and UnreadMsg to the TUI model.</p>
+                        </div>
+                        <div class="package-card">
+                            <h4>internal/reader</h4>
+                            <p>JSONL file polling at 500ms intervals. Parses conversation entries (human, assistant, tool calls), emits ConversationMsg to the model.</p>
+                        </div>
+                        <div class="package-card">
+                            <h4>internal/model</h4>
+                            <p>Bubble Tea model and message types. Handles keyboard input, state management, and event dispatching. Central hub for TUI logic.</p>
+                        </div>
+                        <div class="package-card">
+                            <h4>internal/ui</h4>
+                            <p>Rendering components using lipgloss. Session list, conversation panel, status bar, and Catppuccin Frappé color palette.</p>
+                        </div>
+                        <div class="package-card">
+                            <h4>cmd/ccmon</h4>
+                            <p>Entrypoint. Initializes Bubble Tea program, starts watcher and reader goroutines, manages reader lifecycle on session selection.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Session Package -->
+                <section class="section" id="session">
+                    <h2>internal/session</h2>
+
+                    <div class="subsection">
+                        <h3>Types</h3>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">type Session struct</div>
+                            <div class="entry-desc">Represents a single Claude Code session parsed from ~/.claude/sessions/&lt;pid&gt;.json</div>
+                            <div class="entry-fields">
+                                <div class="field-item"><strong>PID</strong> <span class="field-type">int</span> — Process ID</div>
+                                <div class="field-item"><strong>SessionID</strong> <span class="field-type">string</span> — Unique session identifier (UUID)</div>
+                                <div class="field-item"><strong>Cwd</strong> <span class="field-type">string</span> — Working directory (absolute path)</div>
+                                <div class="field-item"><strong>StartedAt</strong> <span class="field-type">int64</span> — Unix timestamp</div>
+                                <div class="field-item"><strong>ProjectName</strong> <span class="field-type">string</span> — Derived from cwd (last path segment)</div>
+                                <div class="field-item"><strong>WorktreeBranch</strong> <span class="field-type">string</span> — Branch name if worktree session, empty otherwise</div>
+                                <div class="field-item"><strong>Alive</strong> <span class="field-type">bool</span> — Result of kill -0 check</div>
+                                <div class="field-item"><strong>JSONLPath</strong> <span class="field-type">string</span> — Resolved path to conversation JSONL file</div>
+                            </div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">type ProjectGroup struct</div>
+                            <div class="entry-desc">Groups sessions by project name for UI rendering</div>
+                            <div class="entry-fields">
+                                <div class="field-item"><strong>Name</strong> <span class="field-type">string</span> — Project name</div>
+                                <div class="field-item"><strong>Sessions</strong> <span class="field-type">[]*Session</span> — Sessions in this project</div>
+                                <div class="field-item"><strong>Collapsed</strong> <span class="field-type">bool</span> — UI state: is group collapsed?</div>
+                            </div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">type CwdInfo struct</div>
+                            <div class="entry-desc">Result of cwd path parsing</div>
+                            <div class="entry-fields">
+                                <div class="field-item"><strong>ProjectName</strong> <span class="field-type">string</span> — Project name</div>
+                                <div class="field-item"><strong>WorktreeBranch</strong> <span class="field-type">string</span> — Worktree branch (empty if plain session)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h3>Functions</h3>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func ParseCwd(cwd string) CwdInfo</div>
+                            <div class="entry-desc">Parses an absolute cwd path to extract project name and optional worktree branch. Looks for "--claude-worktrees-" delimiter in the basename.</div>
+                            <div class="example">ParseCwd("/Users/alice/myproject") → CwdInfo{ProjectName: "myproject", WorktreeBranch: ""}<br>ParseCwd("/Users/alice/myproject--claude-worktrees-feat-x") → CwdInfo{ProjectName: "myproject", WorktreeBranch: "feat-x"}</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func IsAlive(pid int) bool</div>
+                            <div class="entry-desc">Checks if a process with the given PID is reachable via kill -0 (no signal sent, just check). Returns false for PID ≤ 0.</div>
+                            <div class="example">IsAlive(os.Getpid()) → true<br>IsAlive(-1) → false</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func FindJSONLPath(cwd, sessionID string) string</div>
+                            <div class="entry-desc">Resolves the path to a session's JSONL file. Uses the default ~/.claude/projects/ directory.</div>
+                            <div class="example">FindJSONLPath("/Users/alice/myproject", "session-id-123") → ~/.claude/projects/Users-alice-myproject/session-id-123.jsonl</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func FindJSONLPathIn(baseDir, cwd, sessionID string) string</div>
+                            <div class="entry-desc">Testable variant of FindJSONLPath. Accepts explicit projects directory for unit testing.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func SessionsDir() string</div>
+                            <div class="entry-desc">Returns the path to ~/.claude/sessions/</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Watcher Package -->
+                <section class="section" id="watcher">
+                    <h2>internal/watcher</h2>
+
+                    <div class="subsection">
+                        <h3>Types</h3>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">type Watcher struct</div>
+                            <div class="entry-desc">Monitors ~/.claude/sessions/ and all known JSONL files for changes. Emits SessionsUpdatedMsg, UnreadMsg, and WatchErrorMsg.</div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h3>Functions</h3>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func New(dir string, program *tea.Program) *Watcher</div>
+                            <div class="entry-desc">Creates a new Watcher for the given sessions directory. Program can be nil for testing.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func (w *Watcher) Run()</div>
+                            <div class="entry-desc">Blocks until Stop() is called. Tries fsnotify first; falls back to 2s polling on failure. Sends messages to the program.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func (w *Watcher) Stop()</div>
+                            <div class="entry-desc">Signals the watcher to exit gracefully.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func (w *Watcher) SetSelected(sessionID string)</div>
+                            <div class="entry-desc">Updates which session is currently selected. Suppresses UnreadMsg for the selected session.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func LoadSessions(dir string) ([]*session.Session, error)</div>
+                            <div class="entry-desc">Reads all *.json files in dir, parses them, and checks PID liveness. Returns error if dir doesn't exist.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func GroupByProject(sessions []*session.Session) []session.ProjectGroup</div>
+                            <div class="entry-desc">Groups sessions by ProjectName, preserving insertion order. Returns a slice of ProjectGroup structs ready for UI rendering.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reader Package -->
+                <section class="section" id="reader">
+                    <h2>internal/reader</h2>
+
+                    <div class="subsection">
+                        <h3>Types</h3>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">type Reader struct</div>
+                            <div class="entry-desc">Polls a selected session's JSONL file at 500ms intervals. Parses entries and emits ConversationMsg. Fresh instance per session (stateless between sessions).</div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h3>Functions</h3>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func New(path, sessionID string, program *tea.Program) *Reader</div>
+                            <div class="entry-desc">Creates a fresh Reader for the given JSONL path. Program receives ConversationMsg events.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func (r *Reader) Run(ctx context.Context)</div>
+                            <div class="entry-desc">Starts polling. Reads existing JSONL content immediately, then polls at 500ms intervals until ctx is cancelled. Sends ConversationMsg for new entries.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func ParseLine(line string) (model.ConversationEntry, bool)</div>
+                            <div class="entry-desc">Parses a single JSONL line into a ConversationEntry. Returns ok=false for hook events or malformed JSON.</div>
+                            <div class="entry-fields">
+                                <div class="field-item"><strong>Input types:</strong> "human", "assistant" messages with text, tool_use, and tool_result content</div>
+                                <div class="field-item"><strong>Output types:</strong> "human", "assistant", "tool_call", "tool_result"</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Model Package -->
+                <section class="section" id="model">
+                    <h2>internal/model</h2>
+
+                    <div class="subsection">
+                        <h3>Types</h3>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">type Model struct</div>
+                            <div class="entry-desc">Bubble Tea model. Handles all state, keyboard input, message events, and rendering.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">type ConversationEntry struct</div>
+                            <div class="entry-desc">Parsed conversation line from JSONL</div>
+                            <div class="entry-fields">
+                                <div class="field-item"><strong>Type</strong> <span class="field-type">string</span> — "human", "assistant", "tool_call", "tool_result"</div>
+                                <div class="field-item"><strong>Timestamp</strong> <span class="field-type">string</span> — Formatted HH:MM:SS</div>
+                                <div class="field-item"><strong>Text</strong> <span class="field-type">string</span> — Message body or tool input</div>
+                                <div class="field-item"><strong>ToolName</strong> <span class="field-type">string</span> — Tool name (for tool_call only)</div>
+                                <div class="field-item"><strong>Result</strong> <span class="field-type">string</span> — Tool result (for tool_result only)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h3>Functions</h3>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func New() *Model</div>
+                            <div class="entry-desc">Creates a fresh Model with empty state.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func (m *Model) OnSelectSession(fn func(*session.Session))</div>
+                            <div class="entry-desc">Registers a callback invoked when the user selects a new session. Called by main.go to manage reader lifecycle.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func (m *Model) Init() tea.Cmd</div>
+                            <div class="entry-desc">Bubble Tea Init method. Returns nil (no initial command).</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)</div>
+                            <div class="entry-desc">Bubble Tea Update method. Handles keyboard input, session updates, conversation messages, and watch errors.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func (m *Model) View() string</div>
+                            <div class="entry-desc">Bubble Tea View method. Renders the full TUI layout: header, left panel, divider, right panel, footer.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- UI Package -->
+                <section class="section" id="ui">
+                    <h2>internal/ui</h2>
+
+                    <div class="subsection">
+                        <h3>Types</h3>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">type SessionListState struct</div>
+                            <div class="entry-desc">Holds UI state for the left panel</div>
+                            <div class="entry-fields">
+                                <div class="field-item"><strong>Cursor</strong> <span class="field-type">int</span> — Flat index into visible rows</div>
+                                <div class="field-item"><strong>Collapsed</strong> <span class="field-type">map[string]bool</span> — Project name → collapsed state</div>
+                                <div class="field-item"><strong>UnreadSet</strong> <span class="field-type">map[string]bool</span> — SessionID → has unread</div>
+                                <div class="field-item"><strong>FocusedPanel</strong> <span class="field-type">int</span> — 0=left, 1=right</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h3>Functions</h3>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func RenderSessionList(groups []session.ProjectGroup, selected string, state SessionListState, width, height int) string</div>
+                            <div class="entry-desc">Renders the left panel. Shows project groups with expand/collapse arrows, session rows with status dots, unread indicators.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func RenderConversation(entries []model.ConversationEntry, scroll, width, height int) string</div>
+                            <div class="entry-desc">Renders the right panel. Shows scrollable conversation history with formatted human, assistant, and tool entries.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func RenderStatusBar(warn string, width int) string</div>
+                            <div class="entry-desc">Renders the footer bar. Shows keyboard hints or amber warning if watch error.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func CountSessions(groups []session.ProjectGroup) int</div>
+                            <div class="entry-desc">Returns total session count across all groups.</div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag exported">Exported</span>
+                            <div class="entry-name">func WrapText(text string, width int, indent string) string</div>
+                            <div class="entry-desc">Wraps text at width characters, prefixing each line with indent. Used for conversation message rendering.</div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h3>Color Constants</h3>
+                        <div class="entry">
+                            <span class="tag">Constants</span>
+                            <div class="entry-desc">Catppuccin Frappé palette as hex codes and lipgloss Color objects:</div>
+                            <div class="entry-fields">
+                                <div class="field-item"><strong>ColorBackground</strong> — #303446</div>
+                                <div class="field-item"><strong>ColorPanelBg</strong> — #292c3c</div>
+                                <div class="field-item"><strong>ColorHeaderFooter</strong> — #232634</div>
+                                <div class="field-item"><strong>ColorBorder</strong> — #414559</div>
+                                <div class="field-item"><strong>ColorSelectedRow</strong> — #414559</div>
+                                <div class="field-item"><strong>ColorProjectHeader</strong> — #ca9ee6 (mauve)</div>
+                                <div class="field-item"><strong>ColorActiveSession</strong> — #a6d189 (green)</div>
+                                <div class="field-item"><strong>ColorSelectedSession</strong> — #8caaee (blue)</div>
+                                <div class="field-item"><strong>ColorUnreadTool</strong> — #e5c890 (yellow)</div>
+                                <div class="field-item"><strong>ColorStaleError</strong> — #e78284 (red)</div>
+                                <div class="field-item"><strong>ColorMuted</strong> — #949cbb</div>
+                                <div class="field-item"><strong>ColorDim</strong> — #626880</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Message Types -->
+                <section class="section" id="messages">
+                    <h2>Message Types</h2>
+                    <p>All message types implement <code>tea.Msg</code> and are dispatched via <code>program.Send()</code>.</p>
+
+                    <div class="subsection">
+                        <div class="entry">
+                            <span class="tag message">Message</span>
+                            <div class="entry-name">SessionsUpdatedMsg</div>
+                            <div class="entry-desc">Emitted by watcher when session list changes (create/remove/liveness update)</div>
+                            <div class="entry-fields">
+                                <div class="field-item"><strong>Sessions</strong> <span class="field-type">[]*session.Session</span></div>
+                                <div class="field-item"><strong>Emitted by:</strong> Watcher on CREATE/REMOVE in ~/.claude/sessions/</div>
+                                <div class="field-item"><strong>Frequency:</strong> Instant (fsnotify) or ~2s (polling fallback)</div>
+                            </div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag message">Message</span>
+                            <div class="entry-name">UnreadMsg</div>
+                            <div class="entry-desc">Emitted by watcher when a non-selected session's JSONL grows</div>
+                            <div class="entry-fields">
+                                <div class="field-item"><strong>SessionID</strong> <span class="field-type">string</span></div>
+                                <div class="field-item"><strong>Effect:</strong> Sets yellow dot and ✦ indicator on session</div>
+                            </div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag message">Message</span>
+                            <div class="entry-name">ConversationMsg</div>
+                            <div class="entry-desc">Emitted by reader when new JSONL entries are parsed</div>
+                            <div class="entry-fields">
+                                <div class="field-item"><strong>SessionID</strong> <span class="field-type">string</span></div>
+                                <div class="field-item"><strong>Entries</strong> <span class="field-type">[]ConversationEntry</span></div>
+                                <div class="field-item"><strong>Frequency:</strong> ~500ms, only when file grows</div>
+                            </div>
+                        </div>
+
+                        <div class="entry">
+                            <span class="tag message">Message</span>
+                            <div class="entry-name">WatchErrorMsg</div>
+                            <div class="entry-desc">Emitted by watcher if fsnotify setup fails</div>
+                            <div class="entry-fields">
+                                <div class="field-item"><strong>Err</strong> <span class="field-type">error</span></div>
+                                <div class="field-item"><strong>Effect:</strong> Status bar shows amber warning "File watching unavailable — polling every 2s"</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Constants -->
+                <section class="section" id="constants">
+                    <h2>Constants & Paths</h2>
+
+                    <div class="subsection">
+                        <h3>Session Directories</h3>
+                        <div class="entry">
+                            <div class="entry-signature">~/.claude/sessions/</div>
+                            <div class="entry-desc">Directory containing active session files. Each file named &lt;pid&gt;.json contains session metadata.</div>
+                        </div>
+
+                        <div class="entry">
+                            <div class="entry-signature">~/.claude/projects/</div>
+                            <div class="entry-desc">Directory containing conversation history. Subdirectories are encoded cwds (cwd with leading '/' stripped and internal '/' replaced with '-'). Each subdir contains &lt;sessionId&gt;.jsonl files.</div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h3>Polling Intervals</h3>
+                        <div class="entry">
+                            <div class="entry-signature">Reader Poll: 500ms</div>
+                            <div class="entry-desc">Checks for new JSONL entries while a session is selected</div>
+                        </div>
+
+                        <div class="entry">
+                            <div class="entry-signature">Watcher Fallback: 2s</div>
+                            <div class="entry-desc">Checks for session changes when fsnotify is unavailable</div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h3>UI Constants</h3>
+                        <div class="entry">
+                            <div class="entry-signature">Left Panel Width: 24 chars</div>
+                            <div class="entry-desc">Session list panel</div>
+                        </div>
+
+                        <div class="entry">
+                            <div class="entry-signature">Minimum Terminal Size: 80x24</div>
+                            <div class="entry-desc">Smaller terminals show full-screen warning</div>
+                        </div>
+
+                        <div class="entry">
+                            <div class="entry-signature">Tool Result Truncation: 120 chars</div>
+                            <div class="entry-desc">First line only, truncated if longer</div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+
+        <div class="nav-links">
+            <a href="index.html">← Documentation</a>
+            <a href="ccmon-architecture.html">Architecture →</a>
+        </div>
+
+        <footer>
+            <p>ccmon API Reference — Internal package documentation</p>
+            <p>For the latest code, see <a href="https://github.com/gchiam/ccmon" style="color: #a6d189;">github.com/gchiam/ccmon</a></p>
+        </footer>
+    </div>
+</body>
+</html>
