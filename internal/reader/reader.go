@@ -10,6 +10,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gchiam/ccmon/internal/model"
+	"github.com/gchiam/ccmon/internal/ui"
 )
 
 // rawLine is the top-level structure of a JSONL entry.
@@ -36,10 +37,10 @@ type rawContent struct {
 
 // ParseLine parses a single JSONL line and returns a ConversationEntry.
 // Returns ok=false for lines that should be skipped (hook events, malformed JSON).
-func ParseLine(line string) (model.ConversationEntry, bool) {
+func ParseLine(line string) (ui.ConversationEntry, bool) {
 	var raw rawLine
 	if err := json.Unmarshal([]byte(line), &raw); err != nil {
-		return model.ConversationEntry{}, false
+		return ui.ConversationEntry{}, false
 	}
 	ts := formatTimestamp(raw.Timestamp)
 	switch raw.Type {
@@ -48,34 +49,34 @@ func ParseLine(line string) (model.ConversationEntry, bool) {
 	case "assistant":
 		return parseAssistantMessage(raw, ts)
 	default:
-		return model.ConversationEntry{}, false
+		return ui.ConversationEntry{}, false
 	}
 }
 
-func parseHumanMessage(raw rawLine, ts string) (model.ConversationEntry, bool) {
+func parseHumanMessage(raw rawLine, ts string) (ui.ConversationEntry, bool) {
 	for _, c := range raw.Message.Content {
 		switch c.Type {
 		case "text":
-			return model.ConversationEntry{Type: "human", Timestamp: ts, Text: c.Text}, true
+			return ui.ConversationEntry{Type: "human", Timestamp: ts, Text: c.Text}, true
 		case "tool_result":
 			result := extractToolResultText(c)
-			return model.ConversationEntry{Type: "tool_result", Timestamp: ts, Result: truncate(result, 120)}, true
+			return ui.ConversationEntry{Type: "tool_result", Timestamp: ts, Result: truncate(result, 120)}, true
 		}
 	}
-	return model.ConversationEntry{}, false
+	return ui.ConversationEntry{}, false
 }
 
-func parseAssistantMessage(raw rawLine, ts string) (model.ConversationEntry, bool) {
+func parseAssistantMessage(raw rawLine, ts string) (ui.ConversationEntry, bool) {
 	for _, c := range raw.Message.Content {
 		switch c.Type {
 		case "text":
-			return model.ConversationEntry{Type: "assistant", Timestamp: ts, Text: c.Text}, true
+			return ui.ConversationEntry{Type: "assistant", Timestamp: ts, Text: c.Text}, true
 		case "tool_use":
 			text := extractToolInput(c)
-			return model.ConversationEntry{Type: "tool_call", Timestamp: ts, ToolName: c.Name, Text: text}, true
+			return ui.ConversationEntry{Type: "tool_call", Timestamp: ts, ToolName: c.Name, Text: text}, true
 		}
 	}
-	return model.ConversationEntry{}, false
+	return ui.ConversationEntry{}, false
 }
 
 func extractToolInput(c rawContent) string {
@@ -183,7 +184,7 @@ func (r *Reader) poll() {
 	r.offset += int64(lastNL + 1)
 	complete := buf[:lastNL]
 
-	var entries []model.ConversationEntry
+	var entries []ui.ConversationEntry
 	for _, line := range strings.Split(string(complete), "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {

@@ -1,7 +1,10 @@
 // internal/model/messages.go
 package model
 
-import "github.com/gchiam/ccmon/internal/session"
+import (
+	"github.com/gchiam/ccmon/internal/session"
+	"github.com/gchiam/ccmon/internal/ui"
+)
 
 // SessionsUpdatedMsg is emitted by the watcher whenever the session list changes.
 type SessionsUpdatedMsg struct {
@@ -16,16 +19,7 @@ type UnreadMsg struct {
 // ConversationMsg is emitted by the reader when new entries are available.
 type ConversationMsg struct {
 	SessionID string
-	Entries   []ConversationEntry
-}
-
-// ConversationEntry is a single parsed line from a session JSONL.
-type ConversationEntry struct {
-	Type      string // "human", "assistant", "tool_call", "tool_result"
-	Timestamp string // formatted HH:MM:SS
-	Text      string // message body or tool input JSON
-	ToolName  string // only for tool_call
-	Result    string // only for tool_result (truncated)
+	Entries   []ui.ConversationEntry
 }
 
 // WatchErrorMsg signals that fsnotify setup failed; the watcher falls back to polling.

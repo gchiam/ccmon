@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/gchiam/ccmon/internal/model"
 )
 
 var (
@@ -25,7 +24,7 @@ var (
 )
 
 // RenderConversation renders the right panel.
-func RenderConversation(entries []model.ConversationEntry, scroll, width, height int) string {
+func RenderConversation(entries []ConversationEntry, scroll, width, height int) string {
 	if len(entries) == 0 {
 		return renderEmpty(width, height)
 	}
@@ -54,7 +53,7 @@ func RenderConversation(entries []model.ConversationEntry, scroll, width, height
 	return convPanelStyle.Render(strings.Join(visible, "\n"))
 }
 
-func renderEntry(e model.ConversationEntry, width int) []string {
+func renderEntry(e ConversationEntry, width int) []string {
 	switch e.Type {
 	case "human":
 		header := fmt.Sprintf("%s human · %s", humanPrefix, tsStyle.Render(e.Timestamp))
