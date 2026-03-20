@@ -91,7 +91,7 @@ func FindJSONLPathIn(baseDir, cwd, sessionID string) string {
 		return ""
 	}
 	candidate := filepath.Join(baseDir, encoded, sessionID+".jsonl")
-	if _, err := os.Stat(filepath.Join(baseDir, encoded)); err == nil {
+	if _, err := os.Stat(candidate); err == nil {
 		return candidate
 	}
 	return ""
